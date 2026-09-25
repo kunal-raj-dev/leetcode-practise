@@ -35,11 +35,6 @@ Every problem adheres to a structured 5-layer methodology:
 |:---:|---|---|:---:|:---:|:---:|
 | 01 | [Two Sum (LC 1)](https://leetcode.com/problems/two-sum/) | Array / Hash Table | Easy | ⭐ Yes | [Notes & Code](./Phase_1_Foundation/01_two_sum_1/) |
 
-### Phase 2: Core Data Structures
-| # | Problem | Topic | Difficulty | Google Tagged | Solutions & Notes |
-|:---:|---|---|:---:|:---:|:---:|
-| 01 | [Add Two Numbers (LC 2)](https://leetcode.com/problems/add-two-numbers/) | Linked List / Math / Recursion | Medium | ⭐ Yes | [Notes & Code](./Phase_2_Core_DS/01_add_two_numbers_2/) |
-
 ---
 
 ## 🛠️ Repository Standards

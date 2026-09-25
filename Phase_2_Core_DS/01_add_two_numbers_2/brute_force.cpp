@@ -1,152 +1,218 @@
 // ============================================================
-// Problem : Add Two Numbers (LeetCode #2)
-// Link    : https://leetcode.com/problems/add-two-numbers
-// Approach: BRUTE FORCE — Naive simulation WITHOUT dummy head
-//           (To show why the dummy head trick exists)
-// Time    : O(max(M, N))
-// Space   : O(max(M, N))
+// Problem  : LeetCode #2 — Add Two Numbers
+// Approach : Brute Force — Array Extraction & BigInt Simulation
+// Time     : O(max(N, M)) — multiple passes over lists and vectors
+// Space    : O(N + M)     — stores all digits in intermediate vectors
+// ============================================================
+// WHY THIS APPROACH EXISTS & THE FATAL OVERFLOW TRAP:
+//
+// ⚠️ THE FATAL TRAP (DO NOT DO THIS):
+// Many beginners attempt to convert the linked lists into standard integers:
+//    long long num1 = 0, num2 = 0;
+//    long long sum = num1 + num2;
+//    // create linked list from sum...
+//
+// WHY DOES THAT FAIL?
+// Constraints state that lists can contain up to 100 nodes!
+// In C++:
+//   - int maxes out at ~2 * 10^9 (~10 digits)
+//   - long long maxes out at ~9 * 10^18 (~19 digits)
+// A 100-digit number WILL cause severe integer overflow and crash.
+//
+// THE WORKING BRUTE FORCE:
+// Instead of converting to primitive types, we extract the digits into
+// dynamic arrays (std::vector<int>), simulate grade-school column addition
+// into another vector, and finally build the new linked list.
+// This proves the logic works before optimizing away the extra vectors!
 // ============================================================
 
 #include <bits/stdc++.h>
 using namespace std;
 
-// Definition for singly-linked list node.
-// This is given to you in LeetCode — don't write it in the actual submission.
+// Definition for singly-linked list node provided by LeetCode
 struct ListNode {
     int val;
-    ListNode* next;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
     ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
-class Solution {
-public:
-    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+ListNode* addTwoNumbersBruteForce(ListNode* l1, ListNode* l2) {
+    // --------------------------------------------------------
+    // Step 1: Extract all digits from both linked lists into vectors
+    // --------------------------------------------------------
+    vector<int> digits1;
+    vector<int> digits2;
 
-        // --- Step 1: Initialize tracking variables ---
-        int carry = 0;         // carry from the previous digit's sum (starts at 0)
-        ListNode* head = nullptr;  // head of the result list (we don't know it yet)
-        ListNode* tail = nullptr;  // tail pointer — last node we added to result
-
-        // --- Step 2: Loop until BOTH lists are done AND no carry left ---
-        // Why all three conditions?
-        //   l1 != nullptr    → l1 still has digits to process
-        //   l2 != nullptr    → l2 still has digits to process
-        //   carry != 0       → there's a leftover carry to handle (e.g. 99 + 1 = 100)
-        while (l1 != nullptr || l2 != nullptr || carry != 0) {
-
-            // Get the digit from l1 (use 0 if l1 is exhausted)
-            int d1 = (l1 != nullptr) ? l1->val : 0;
-
-            // Get the digit from l2 (use 0 if l2 is exhausted)
-            int d2 = (l2 != nullptr) ? l2->val : 0;
-
-            // Add both digits + any carry from previous round
-            int sum = d1 + d2 + carry;
-
-            // carry for next round: if sum >= 10, carry = 1, else carry = 0
-            // Example: sum = 17 → carry = 1, digit = 7
-            // Example: sum = 7  → carry = 0, digit = 7
-            carry = sum / 10;
-
-            // The actual digit to store in this result node
-            int digit = sum % 10;
-
-            // --- Step 3: Create a new node and attach it to the result list ---
-            // BRUTE FORCE: We manually handle the first node (head) specially
-            // This is the "pain point" that the dummy head trick eliminates.
-            ListNode* newNode = new ListNode(digit);
-
-            if (head == nullptr) {
-                // First node — initialize both head and tail
-                head = newNode;
-                tail = newNode;
-            } else {
-                // Subsequent nodes — link to the tail and update tail
-                tail->next = newNode;
-                tail = tail->next;
-            }
-
-            // --- Step 4: Advance both list pointers (if not already null) ---
-            if (l1 != nullptr) l1 = l1->next;
-            if (l2 != nullptr) l2 = l2->next;
-        }
-
-        // Return the head of the constructed result list
-        return head;
+    ListNode* curr1 = l1;
+    while (curr1 != nullptr) {
+        digits1.push_back(curr1->val);
+        curr1 = curr1->next;
     }
-};
 
-// ============================================================
-// HOW TO TEST — Manual linked list construction helper
-// ============================================================
+    ListNode* curr2 = l2;
+    while (curr2 != nullptr) {
+        digits2.push_back(curr2->val);
+        curr2 = curr2->next;
+    }
 
-// Helper to build a linked list from a vector (for testing)
-ListNode* buildList(vector<int> digits) {
-    if (digits.empty()) return nullptr;
-    ListNode* head = new ListNode(digits[0]);
-    ListNode* curr = head;
-    for (int i = 1; i < (int)digits.size(); i++) {
-        curr->next = new ListNode(digits[i]);
+    // --------------------------------------------------------
+    // Step 2: Perform grade-school column addition on the vectors
+    // --------------------------------------------------------
+    vector<int> resultDigits;
+    int i = 0, j = 0;
+    int carry = 0;
+    int n1 = digits1.size();
+    int n2 = digits2.size();
+
+    // Continue as long as there is an unread digit in either list
+    // OR a remaining carry from the previous column
+    while (i < n1 || j < n2 || carry > 0) {
+        int val1 = (i < n1) ? digits1[i++] : 0;
+        int val2 = (j < n2) ? digits2[j++] : 0;
+
+        int sum = val1 + val2 + carry;
+        resultDigits.push_back(sum % 10); // current column digit (0-9)
+        carry = sum / 10;                 // carry forward to next column (0 or 1)
+    }
+
+    // --------------------------------------------------------
+    // Step 3: Convert the result vector into a new linked list
+    // --------------------------------------------------------
+    ListNode* dummy = new ListNode(0); // Dummy node simplifies head attachment
+    ListNode* curr = dummy;
+
+    for (int d : resultDigits) {
+        curr->next = new ListNode(d);
         curr = curr->next;
     }
+
+    ListNode* head = dummy->next;
+    delete dummy; // Free sentinel node
     return head;
 }
 
-// Helper to print a linked list
-void printList(ListNode* head) {
-    while (head) {
-        cout << head->val;
-        if (head->next) cout << " → ";
-        head = head->next;
+// ============================================================
+// HELPER FUNCTIONS FOR LOCAL TESTING
+// ============================================================
+
+// Creates a linked list from an array of integers
+ListNode* createList(const vector<int>& values) {
+    ListNode* dummy = new ListNode(0);
+    ListNode* curr = dummy;
+    for (int v : values) {
+        curr->next = new ListNode(v);
+        curr = curr->next;
     }
-    cout << "\n";
+    ListNode* head = dummy->next;
+    delete dummy;
+    return head;
 }
 
+// Prints the linked list in format: 7 -> 0 -> 8
+void printList(ListNode* head) {
+    if (!head) {
+        cout << "[]" << endl;
+        return;
+    }
+    ListNode* curr = head;
+    while (curr != nullptr) {
+        cout << curr->val;
+        if (curr->next != nullptr) cout << " -> ";
+        curr = curr->next;
+    }
+    cout << endl;
+}
+
+// Frees all allocated memory in the linked list
+void freeList(ListNode* head) {
+    while (head != nullptr) {
+        ListNode* temp = head;
+        head = head->next;
+        delete temp;
+    }
+}
+
+// ============================================================
+// MAIN FUNCTION — COMPREHENSIVE TEST SUITE
+// ============================================================
+
 int main() {
+    // Fast I/O lines
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    Solution sol;
+    cout << "=== LeetCode #2: Add Two Numbers (Brute Force) ===" << "\n\n";
 
-    // Test 1: 342 + 465 = 807
-    // l1 = [2, 4, 3], l2 = [5, 6, 4]
-    // Expected: [7, 0, 8]
-    ListNode* l1 = buildList({2, 4, 3});
-    ListNode* l2 = buildList({5, 6, 4});
-    cout << "Test 1 — 342 + 465 = 807\nResult: ";
-    printList(sol.addTwoNumbers(l1, l2));
+    // --- Test Case 1: Standard Example (342 + 465 = 807) ---
+    // l1: 2 -> 4 -> 3
+    // l2: 5 -> 6 -> 4
+    ListNode* l1_1 = createList({2, 4, 3});
+    ListNode* l2_1 = createList({5, 6, 4});
+    cout << "Test 1 Input : l1 = [2, 4, 3], l2 = [5, 6, 4]" << "\n";
+    ListNode* ans1 = addTwoNumbersBruteForce(l1_1, l2_1);
+    cout << "Test 1 Output: ";
+    printList(ans1);
+    cout << "Expected     : 7 -> 0 -> 8" << "\n\n";
 
-    // Test 2: 99 + 1 = 100 (carry at end!)
-    // l1 = [9, 9], l2 = [1]
-    // Expected: [0, 0, 1]
-    ListNode* l3 = buildList({9, 9});
-    ListNode* l4 = buildList({1});
-    cout << "Test 2 — 99 + 1 = 100\nResult: ";
-    printList(sol.addTwoNumbers(l3, l4));
+    // --- Test Case 2: Zeros (0 + 0 = 0) ---
+    ListNode* l1_2 = createList({0});
+    ListNode* l2_2 = createList({0});
+    cout << "Test 2 Input : l1 = [0], l2 = [0]" << "\n";
+    ListNode* ans2 = addTwoNumbersBruteForce(l1_2, l2_2);
+    cout << "Test 2 Output: ";
+    printList(ans2);
+    cout << "Expected     : 0" << "\n\n";
 
-    // Test 3: 0 + 0 = 0
-    ListNode* l5 = buildList({0});
-    ListNode* l6 = buildList({0});
-    cout << "Test 3 — 0 + 0 = 0\nResult: ";
-    printList(sol.addTwoNumbers(l5, l6));
+    // --- Test Case 3: Unequal Lengths + Multi-digit Carry (9999999 + 9999 = 10009998) ---
+    ListNode* l1_3 = createList({9, 9, 9, 9, 9, 9, 9});
+    ListNode* l2_3 = createList({9, 9, 9, 9});
+    cout << "Test 3 Input : l1 = [9,9,9,9,9,9,9], l2 = [9,9,9,9]" << "\n";
+    ListNode* ans3 = addTwoNumbersBruteForce(l1_3, l2_3);
+    cout << "Test 3 Output: ";
+    printList(ans3);
+    cout << "Expected     : 8 -> 9 -> 9 -> 9 -> 0 -> 0 -> 0 -> 1" << "\n\n";
 
-    // Test 4: 999 + 999 = 1998
-    // Expected: [8, 9, 9, 1]
-    ListNode* l7 = buildList({9, 9, 9});
-    ListNode* l8 = buildList({9, 9, 9});
-    cout << "Test 4 — 999 + 999 = 1998\nResult: ";
-    printList(sol.addTwoNumbers(l7, l8));
+    // --- Test Case 4: Lingering Final Carry (99 + 1 = 100) ---
+    ListNode* l1_4 = createList({9, 9});
+    ListNode* l2_4 = createList({1});
+    cout << "Test 4 Input : l1 = [9, 9], l2 = [1]" << "\n";
+    ListNode* ans4 = addTwoNumbersBruteForce(l1_4, l2_4);
+    cout << "Test 4 Output: ";
+    printList(ans4);
+    cout << "Expected     : 0 -> 0 -> 1" << "\n";
+
+    // Clean up memory
+    freeList(l1_1); freeList(l2_1); freeList(ans1);
+    freeList(l1_2); freeList(l2_2); freeList(ans2);
+    freeList(l1_3); freeList(l2_3); freeList(ans3);
+    freeList(l1_4); freeList(l2_4); freeList(ans4);
 
     return 0;
 }
 
 // ============================================================
-// COMPLEXITY ANALYSIS
-// Time:  O(max(M, N)) — we visit every node in both lists once
-// Space: O(max(M, N)) — result list has at most max(M,N)+1 nodes
+// TRACE THROUGH TEST 4: l1=[9, 9], l2=[1]
 //
-// PROBLEM WITH THIS APPROACH:
-//   The `if (head == nullptr)` check inside the loop is messy.
-//   Every iteration has an extra branch just to handle the first node.
-//   The OPTIMIZED solution eliminates this using a "dummy head" node.
+// Extraction:
+//   digits1 = [9, 9]
+//   digits2 = [1]
+//
+// Iteration 0:
+//   val1 = 9, val2 = 1, carry = 0
+//   sum = 10 -> digit = 0, new carry = 1
+//   resultDigits = [0]
+//
+// Iteration 1:
+//   val1 = 9, val2 = 0, carry = 1
+//   sum = 10 -> digit = 0, new carry = 1
+//   resultDigits = [0, 0]
+//
+// Iteration 2 (both lists empty, but carry == 1):
+//   val1 = 0, val2 = 0, carry = 1
+//   sum = 1 -> digit = 1, new carry = 0
+//   resultDigits = [0, 0, 1]
+//
+// Converted to linked list: 0 -> 0 -> 1 ✅
 // ============================================================

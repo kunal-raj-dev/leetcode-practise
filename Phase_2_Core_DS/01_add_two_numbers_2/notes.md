@@ -1,371 +1,381 @@
-# 🔗 Add Two Numbers
+# 📌 Add Two Numbers — Complete Notes
 
-**LeetCode Link:** https://leetcode.com/problems/add-two-numbers
-
----
-
-## 🏷️ Session Tag
-
-```
-Problem    : Add Two Numbers
-Topic      : Linked List, Math, Recursion
-Difficulty : Medium
-Google-Tagged: Yes
-Phase      : 2 (Core Data Structures)
-```
+**LeetCode #2:** [Add Two Numbers — LeetCode](https://leetcode.com/problems/add-two-numbers/)  
+**Topic:** Linked List, Math, Recursion  
+**Difficulty:** 🟡 Medium  
+**Google-Tagged:** 🌟 Yes (Top-tier Google interview favorite)  
+**Phase:** 2 — Core Data Structures  
 
 ---
 
-## 🔵 LAYER 1 — Problem Deconstruction ("What is this even asking?")
+## 🔵 LAYER 1 — What Is This Problem Asking?
 
-### Plain English Explanation
+### Problem Statement (Plain English)
 
-Imagine you have two numbers — say **342** and **465**.  
-But instead of being stored normally, each number is stored as a **Linked List** — where each node holds **one digit**, and importantly, the digits are stored **in reverse order** (least significant digit first).
+You are given **two non-empty linked lists** representing two non-negative integers.
+- The digits are stored in **reverse order** (meaning the 1's digit is at the head).
+- Each node contains a **single digit** (`0` to `9`).
+- Your task: **Add the two numbers** and return the sum as a **linked list** (also in reverse order).
 
-So:
-- 342 → stored as: `2 → 4 → 3`
-- 465 → stored as: `5 → 6 → 4`
+### One-Line Rephrasing
 
-You need to **add these two numbers** and return the **result also as a linked list** (in the same reverse order).
+> "Perform standard grade-school addition on two numbers digit-by-digit, starting from the ones place at the head, propagating the carry forward into a new linked list."
 
-Expected Output for the above: `342 + 465 = 807` → returned as `7 → 0 → 8`
+### Visual Example
+
+```
+Input:
+l1:  2 ➔ 4 ➔ 3       (represents number 342)
+l2:  5 ➔ 6 ➔ 4       (represents number 465)
+
+Math:
+    3 4 2
+  + 4 6 5
+  -------
+    8 0 7
+
+Output:
+ans: 7 ➔ 0 ➔ 8       (represents number 807)
+```
+
+Explanation:
+1. `2 + 5 = 7` (carry = 0) ➔ node `7`
+2. `4 + 6 = 10` (sum = 0, carry = 1) ➔ node `0`
+3. `3 + 4 + 1(carry) = 8` (carry = 0) ➔ node `8`
 
 ---
 
 ### Inputs & Outputs
 
-| | Detail |
-|---|---|
-| **Input** | Two non-empty linked lists `l1` and `l2` (digits in reverse order) |
-| **Output** | A new linked list representing the sum (digits in reverse order) |
-
----
-
-### Constraints (and what they mean for us)
-
-| Constraint | Implication |
-|---|---|
-| Each node holds a digit `[0,9]` | No weird values, just single digits |
-| No leading zeros (except `0` itself) | Input is clean |
-| Lists can have different lengths | We must handle one list ending before the other |
-| Sum can overflow `int` or `long long` | Irrelevant — we work digit by digit, not as a full number |
-
----
-
-### Dry Run by Hand — Small Example
-
 ```
-l1: 2 → 4 → 3    (represents 342)
-l2: 5 → 6 → 4    (represents 465)
+INPUT:
+  ListNode* l1  → head of first linked list (non-empty, values 0-9)
+  ListNode* l2  → head of second linked list (non-empty, values 0-9)
 
-Step 1: 2 + 5 = 7,  carry = 0  → node: 7
-Step 2: 4 + 6 = 10, carry = 1  → node: 0
-Step 3: 3 + 4 + 1(carry) = 8, carry = 0  → node: 8
-
-Result: 7 → 0 → 8   (represents 807) ✅
+OUTPUT:
+  ListNode*     → head of the newly created sum linked list
 ```
 
 ---
 
-### Common Traps & Misreadings
-
-1. **Forgetting carry at the end:** If after both lists are done, carry is still `1`, you MUST add one more node.
-   - Example: `9 → 9` + `1` = `0 → 0 → 1` (i.e., `99 + 1 = 100`)
-2. **Thinking you need to reverse the lists first:** You DON'T. The reverse order is actually a gift — it means we naturally add from least significant digit, which is how real addition works.
-3. **Forgetting to handle lists of different lengths:** One list may be longer. When one ends, treat missing nodes as `0`.
-4. **Memory leak / dangling pointers:** You're creating new nodes — keep track of your head pointer.
-
----
-
-### One-Sentence Summary
-
-> "We simulate grade-school digit-by-digit addition on two reversed linked lists, carrying over the remainder, and build a new reversed linked list as the result."
-
----
-
-## 🟡 LAYER 2 — Concept Building ("What world does this problem live in?")
-
-### DS/Algo Family
-
-This problem lives in **Linked Lists + Math Simulation**.
-
-It is **not** about finding a pattern or applying a clever algorithm.  
-It is about carefully **simulating** the process of addition, handling all the edge cases.
-
----
-
-### Why Linked Lists Fit Here
-
-Think of a linked list like a **train**:
-- Each carriage (node) holds one digit
-- The train can be any length
-- You can only visit one carriage at a time, left to right
-
-In this problem:
-- We walk both trains simultaneously, one node at a time
-- At each stop, we add the two digits + any carry from the previous stop
-- We build a new train (result list) as we go
-
----
-
-### Visual Explanation — ASCII Art
+### Key Constraints & What They Imply
 
 ```
-l1:  [2] → [4] → [3] → NULL
-l2:  [5] → [6] → [4] → NULL
-              carry: 0
+1. Number of nodes in each list: [1, 100]
+   🚨 CRITICAL IMPLICATION: A number can have up to 100 digits!
+   Standard C++ primitive types:
+     - `int` maxes out at ~2 * 10^9 (~10 digits)
+     - `long long` maxes out at ~9 * 10^18 (~19 digits)
+     - `__int128` maxes out at ~39 digits
+   ❌ You CANNOT convert the lists to normal integer types. It WILL overflow!
+   You MUST process the addition digit-by-digit (Big Integer simulation).
 
-Pass 1:       2 + 5 + 0(carry) = 7,   new_carry = 0
-              result: [7]
+2. 0 <= Node.val <= 9
+   → Each node contains strictly one base-10 digit.
+   → Maximum sum at any column: 9 + 9 + 1 (previous carry) = 19.
+   → Therefore, carry is always strictly either 0 or 1.
 
-Pass 2:       4 + 6 + 0(carry) = 10,  new_carry = 1
-              result: [7] → [0]
-
-Pass 3:       3 + 4 + 1(carry) = 8,   new_carry = 0
-              result: [7] → [0] → [8]
-
-Both lists done, carry = 0 → STOP
-Final: [7] → [0] → [8] → NULL
+3. No leading zeros (except the number 0 itself)
+   → Input numbers are clean canonical numbers (e.g., [0] represents 0, not [0, 0, 1]).
 ```
 
 ---
 
-### Real-World Analogy
+### ⚠️ Common Beginner Traps
 
-Think of two people adding numbers by hand in a notebook:
-- Person A reads digits of the first number one by one
-- Person B reads digits of the second number one by one
-- A third person writes down the result, and holds a "carry slip" when the sum exceeds 9
-
-The carry slip is passed forward to the next column. That's exactly what we do in code.
+1. **The Integer Overflow Trap (Fatal Mistake!):**
+   Trying to turn `l1` into `int n1 = 342` and `l2` into `int n2 = 465`, adding them `n1 + n2`, and building a list. For 100 nodes, `long long` overflows immediately.
+2. **Unequal List Lengths Trap:**
+   Lists can have different lengths (e.g., `999` + `1`). If one list ends, you must continue processing the other list.
+3. **The Lingering Carry Trap (Most Common Bug):**
+   Consider `99 + 1 = 100`:
+   `l1: 9 -> 9`
+   `l2: 1`
+   After both lists are fully traversed, there is still `carry = 1` remaining! You MUST create a final node `1`.
+4. **Reverse Order Confusion:**
+   Beginners often think "I should reverse the lists first!" **NO!** Reverse order is actually a huge gift. When you do addition on paper, you start from the right (ones place). Here, the head already points to the ones place!
 
 ---
 
-### Prerequisite Theory — Linked Lists in C++
+### Dry Run by Hand
 
-If you haven't used linked lists before, here's the minimum you need:
+Let's trace `l1 = [9, 9]`, `l2 = [1]` (i.e., `99 + 1 = 100`):
 
+| Step | Node `l1` | Node `l2` | Prev Carry | Calculation (`val1 + val2 + carry`) | New Digit (`sum % 10`) | Next Carry (`sum / 10`) | Result List Built So Far |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---|
+| 1 | 9 | 1 | 0 | 9 + 1 + 0 = 10 | 0 | 1 | `7 ->` | `0` |
+| 2 | 9 | null | 1 | 9 + 0 + 1 = 10 | 0 | 1 | `0 -> 0` |
+| 3 | null | null | 1 | 0 + 0 + 1 = 1 | 1 | 0 | `0 -> 0 -> 1` |
+
+Final Output: `0 -> 0 -> 1` (represents `100`).
+
+---
+
+## 🟡 LAYER 2 — Core Concept: Grade-School Math & Dummy Head
+
+### 1. Grade-School Addition (Column Addition)
+
+When adding two large numbers by hand:
+```
+    Carries:  1  1
+             9  9  9
+          +     1  5
+          ----------
+          1  0  1  4
+```
+At every single column:
+- $\text{sum} = \text{digit}_1 + \text{digit}_2 + \text{carry}$
+- $\text{new\_digit} = \text{sum} \pmod{10}$
+- $\text{new\_carry} = \lfloor \text{sum} / 10 \rfloor$
+
+Since our linked list puts the lowest digit at the **head**, we traverse left-to-right through the nodes, applying this exact formula.
+
+---
+
+### 2. The "Dummy Head" Pattern (A Must-Know for Linked Lists)
+
+#### The Problem Without Dummy Head:
+When creating a brand new linked list, the first node is a special case:
 ```cpp
-// A node in a linked list
-struct ListNode {
-    int val;        // the digit stored
-    ListNode* next; // pointer to the next node
+ListNode* head = nullptr;
+ListNode* tail = nullptr;
 
-    // Constructor
-    ListNode(int x) : val(x), next(nullptr) {}
-};
+// For every new node:
+if (head == nullptr) {
+    head = new ListNode(digit);
+    tail = head;
+} else {
+    tail->next = new ListNode(digit);
+    tail = tail->next;
+}
 ```
+Notice how every single iteration has to check `if (head == nullptr)`? This adds messy boilerplate and introduces pointer bugs.
 
-**Key operations:**
-```cpp
-ListNode* curr = head;     // start from the head node
-curr->val;                 // access the digit
-curr = curr->next;         // move to the next node
-curr == nullptr;           // means we've reached the end of the list
+#### The Solution: The Dummy Node!
+Create a fake starting node on the heap or stack:
 ```
-
-**Building a new list using a dummy head (critical technique):**
+[Dummy: 0] ➔ nullptr
+     ▲
+     └── tail
+```
+Every time a new node is created, you simply attach it:
 ```cpp
-// Dummy node trick — avoids special-casing the first node
-ListNode dummy(0);
-ListNode* tail = &dummy;   // tail always points to the last node we added
-
-// To add a new node:
 tail->next = new ListNode(digit);
 tail = tail->next;
+```
+When finished, the real answer begins at:
+```cpp
+ListNode* result = dummy->next;
+```
+The dummy node eliminates all special cases for the first node!
 
-// At the end, the real result starts at:
+---
+
+## 🟠 LAYER 3 — Problem-Solving Mindset
+
+### The Inner Monologue (How to Arrive at the Solution)
+
+1. *"Can I convert both lists to numbers, add them, and convert back?"*
+   - Let's check constraints: Length up to 100 digits.
+   - 100 digits will overflow `int` (10 digits) and `long long` (19 digits).
+   - Conclusion: **Impossible with standard numeric types.**
+
+2. *"How do I add numbers that don't fit in standard variables?"*
+   - Brute force / naive: Extract all digits into two `vector<int>` or `string`, perform school addition in a loop to produce a result `vector<int>`, then convert that vector into a linked list.
+   - Let's analyze: That works! But it requires $O(N)$ extra space to store intermediate vectors and takes two separate passes (one to extract, one to build).
+
+3. *"Can I do this in a single pass without intermediate vectors?"*
+   - Look at the lists: `l1` has digit 0, `l2` has digit 0.
+   - I can add `l1->val + l2->val` directly right now, calculate the new digit, attach a new node, and advance pointers!
+   - We only need one auxiliary integer: `carry`.
+
+4. *"What happens if one list is shorter than the other?"*
+   - If `l1` is null, its contribution to the sum is simply `0`.
+   - `int val1 = (l1 != nullptr) ? l1->val : 0;`
+
+5. *"When does the loop terminate?"*
+   - If `l1` runs out, we might still have `l2`.
+   - If both run out, we might still have a `carry == 1`.
+   - So keep going as long as:
+     `while (l1 != nullptr || l2 != nullptr || carry != 0)`
+
+---
+
+## 🔴 LAYER 4 — C++ Implementation
+
+### Approach 1: Brute Force (Vector Extraction & Addition)
+*(See [brute_force.cpp](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_2_Core_DS/01_add_two_numbers_2/brute_force.cpp))*
+
+Extract node values into arrays, simulate column addition, then allocate nodes:
+```cpp
+// 1. Extract values into std::vector<int>
+vector<int> v1, v2;
+while (l1) { v1.push_back(l1->val); l1 = l1->next; }
+while (l2) { v2.push_back(l2->val); l2 = l2->next; }
+
+// 2. Perform digit addition into v_sum
+vector<int> v_sum;
+int i = 0, j = 0, carry = 0;
+while (i < v1.size() || j < v2.size() || carry) {
+    int val1 = (i < v1.size()) ? v1[i++] : 0;
+    int val2 = (j < v2.size()) ? v2[j++] : 0;
+    int sum = val1 + val2 + carry;
+    v_sum.push_back(sum % 10);
+    carry = sum / 10;
+}
+
+// 3. Build resulting linked list from v_sum
+ListNode dummy(0);
+ListNode* curr = &dummy;
+for (int d : v_sum) {
+    curr->next = new ListNode(d);
+    curr = curr->next;
+}
 return dummy.next;
 ```
 
-> **Why dummy head?** Without it, you'd need an `if` statement to handle the very first node specially. With it, every node addition is uniform — no special case.
-
 ---
 
-## 🟠 LAYER 3 — Problem-Solving Mindset ("How do I think my way to a solution?")
-
-> Always start with brute force. Never skip it.
-
-### Inner Monologue — Walk Through Your Thinking
-
-**Question 1:** What am I doing repeatedly?
-→ "I'm visiting one node from each list and adding their values."
-→ **Signal: Use a loop that processes both lists together.**
-
-**Question 2:** What extra state do I need to carry between steps?
-→ "The carry from the previous column's addition."
-→ **Signal: Maintain a `carry` variable across iterations.**
-
-**Question 3:** What happens when one list is shorter?
-→ "I should treat missing nodes as having digit `0`."
-→ **Signal: Use `(l1 ? l1->val : 0)` style ternary expressions.**
-
-**Question 4:** When do I stop?
-→ "When BOTH lists are exhausted AND carry is 0."
-→ **Signal: Loop condition is `while (l1 || l2 || carry)`.**
-
----
-
-### Brute Force Approach — Extract Numbers, Add, Rebuild
-
-**Idea:** Convert both linked lists to actual numbers, add them, convert the sum back to a linked list.
-
-**Why this fails:**
-- The numbers can have **up to 100 digits** each (per constraints)
-- `int`, `long long` — all overflow with 100-digit numbers
-- This approach breaks at scale
-
-**Conclusion:** We CANNOT use this. But understanding why helps us appreciate the correct approach.
-
----
-
-### Optimal Approach — Digit-by-Digit Simulation
-
-**Idea:** Don't reconstruct the numbers. Instead, walk both lists simultaneously, add digit by digit, manage carry, build result list on the fly.
-
-This is like performing long addition by hand — the exact real-world way numbers are added.
-
-**Loop condition:** `while (l1 != nullptr || l2 != nullptr || carry != 0)`
-
-**At each iteration:**
-1. Get digit from l1 (or 0 if l1 is exhausted)
-2. Get digit from l2 (or 0 if l2 is exhausted)
-3. `sum = d1 + d2 + carry`
-4. `carry = sum / 10`  (will be 0 or 1)
-5. `digit = sum % 10`  (the digit to store in result)
-6. Create a new node with `digit`, attach it to result list
-7. Advance l1 and l2 if they're not null
-
----
-
-## 🔴 LAYER 4 — Implementation ("Let's write the C++ code")
-
-### BRUTE FORCE — Why we skip it properly
-
-As discussed, extracting numbers doesn't work for large inputs (100 digits = overflow).  
-The "brute force" here conceptually is the simulation — there's no inferior starting point to demonstrate.  
-Instead, we show a slightly-less-clean version first, then refine.
-
-**See:** [`brute_force.cpp`](./brute_force.cpp)  
-(This is the "naive simulation" — correct but without the dummy head trick, harder to read)
-
----
-
-### OPTIMIZED — Dummy Head Simulation
-
-**See:** [`optimized.cpp`](./optimized.cpp)
-
-**Core logic walkthrough:**
+### Approach 2: Optimal (One-Pass Direct Simulation with Dummy Head)
+*(See [optimized.cpp](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_2_Core_DS/01_add_two_numbers_2/optimized.cpp))*
 
 ```cpp
-int sum   = d1 + d2 + carry;  // total at this digit position
-carry     = sum / 10;          // 0 or 1 — carried to next position
-int digit = sum % 10;          // actual digit to store
+ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+    ListNode* dummy = new ListNode(0); // Dummy sentinel node
+    ListNode* curr = dummy;            // Traversal pointer
+    int carry = 0;
+
+    // Loop continues as long as there is at least one digit or a carry left
+    while (l1 != nullptr || l2 != nullptr || carry != 0) {
+        int val1 = (l1 != nullptr) ? l1->val : 0;
+        int val2 = (l2 != nullptr) ? l2->val : 0;
+
+        int sum = val1 + val2 + carry;
+        carry = sum / 10; // New carry for next iteration (0 or 1)
+
+        curr->next = new ListNode(sum % 10); // Store single-digit value
+        curr = curr->next;
+
+        // Advance source list pointers if available
+        if (l1 != nullptr) l1 = l1->next;
+        if (l2 != nullptr) l2 = l2->next;
+    }
+
+    ListNode* result = dummy->next;
+    delete dummy; // Clean up the dummy node to avoid memory leaks
+    return result;
+}
 ```
 
-**Why `sum / 10` gives carry:**
-- If sum = 7: carry = 0, digit = 7
-- If sum = 10: carry = 1, digit = 0
-- If sum = 17: carry = 1, digit = 7
-- If sum = 18: carry = 1, digit = 8
-- Maximum possible sum = 9 + 9 + 1(carry) = 19 → carry is always 0 or 1
-
 ---
 
-### Complexity Analysis
+### Complexity Comparison
 
-**Time Complexity: O(max(M, N))**
-- M = length of l1, N = length of l2
-- We visit every node exactly once
-- The extra carry check at the end is O(1)
-- **Intuition:** We do one unit of work per digit of the longer number
-
-**Space Complexity: O(max(M, N) + 1)**
-- We create a new result list with at most `max(M, N) + 1` nodes
-- The `+1` is for the possible extra carry node (e.g., 99 + 1 = 100, three digits from two)
-- **Intuition:** We always allocate exactly as many result nodes as the result has digits
-- We often write this as **O(max(M, N))** dropping the constant
-
----
-
-### Edge Cases — Verified ✅
-
-| Edge Case | Input | Expected Output |
+| Metric | Brute Force (Vector Extraction) | Optimized (One-Pass Traversal) |
 |---|---|---|
-| Different length lists | `[2,4,3]` + `[5,6]` | `[7,0,4]` (342 + 65 = 407) |
-| Carry at end | `[9,9]` + `[1]` | `[0,0,1]` (99 + 1 = 100) |
-| Both single digit, no carry | `[2]` + `[3]` | `[5]` |
-| Both single digit, with carry | `[5]` + `[5]` | `[0,1]` (5 + 5 = 10) |
-| One list is zero | `[0]` + `[0]` | `[0]` |
-| Max carry propagation | `[9,9,9]` + `[9,9,9]` | `[8,9,9,1]` (999+999=1998) |
+| **Time Complexity** | $O(\max(N, M))$ (3 distinct passes) | $O(\max(N, M))$ (Single pass) |
+| **Auxiliary Space** | $O(N + M)$ (Stores digits in vectors) | $O(1)$ (Only pointers & `carry` variable) |
+| **Output Space** | $O(\max(N, M))$ for output nodes | $O(\max(N, M))$ for output nodes |
+| **Operations for $N=100$** | ~300 operations + dynamic heap allocations | ~100 direct operations |
 
 ---
 
-## 🟣 LAYER 5 — Pattern Extraction ("What did we actually learn?")
+### Edge Cases Checked
 
-### The Reusable Template
+1. **Different lengths:** `l1 = [9, 9]`, `l2 = [1]` ➔ `[0, 0, 1]` (handles trailing carry + length mismatch)
+2. **Zeros:** `l1 = [0]`, `l2 = [0]` ➔ `[0]`
+3. **Carry throughout all digits:** `[9, 9, 9] + [1]` ➔ `[0, 0, 0, 1]` (chain carry propagation)
+4. **Single-digit carry:** `[5] + [5]` ➔ `[0, 1]`
 
+---
+
+## 🟣 LAYER 5 — Pattern Extraction
+
+### Pattern Name: Simultaneous Multi-List Traversal with Sentinel (Dummy) Node
+
+### The Fundamental Rule
+
+> **Rule 1 (Linked List Construction):**  
+> "Whenever you need to build a new linked list dynamically, always create a **Dummy Head** sentinel. Attach new nodes to `curr->next`, then return `dummy->next`."
+
+> **Rule 2 (Digit Math & Simulation):**  
+> "Whenever you simulate column-by-column math across two streams (lists, strings, or arrays), keep the loop condition running while **any** stream has elements **OR** the `carry > 0`."
+
+### Trigger Words in Problem Statements
+
+- *"Add two numbers represented as linked lists / strings"*
+- *"Digits are stored in reverse order"*
+- *"Merge two sorted lists / combine two lists into a new one"*
+- *"Arbitrary-precision arithmetic / BigInt simulation"*
+
+---
+
+### Reusable Template
+
+```cpp
+// Generic Two-Pointer Stream Addition Template
+ListNode* dummy = new ListNode(0);
+ListNode* curr = dummy;
+int carry = 0;
+
+while (p1 != nullptr || p2 != nullptr || carry != 0) {
+    int v1 = p1 ? p1->val : 0;
+    int v2 = p2 ? p2->val : 0;
+
+    int total = v1 + v2 + carry;
+    carry = total / BASE; // BASE = 10 for decimal, 2 for binary
+
+    curr->next = new ListNode(total % BASE);
+    curr = curr->next;
+
+    if (p1) p1 = p1->next;
+    if (p2) p2 = p2->next;
+}
+
+ListNode* head = dummy->next;
+delete dummy;
+return head;
 ```
-Whenever you see: Two linked lists, simulate a process node by node
-Think:
-    1. Use while (l1 || l2 || extra_state) as your loop
-    2. Use ternary: val = (ptr ? ptr->val : 0) to handle different lengths
-    3. Use dummy head to cleanly build a result list
-    4. Advance pointers carefully: if (ptr) ptr = ptr->next
-```
 
-### "Whenever You See X, Think Y"
-
-| Trigger Pattern | Your Reflex |
-|---|---|
-| "Add/merge two linked lists" | Dual-pointer traversal with dummy head |
-| "Carry/remainder propagates" | `carry = sum / 10`, `digit = sum % 10` |
-| "Lists of different lengths" | Treat missing as `0`, loop until both exhausted |
-| "Build result as linked list" | Dummy head trick — avoid first-node special case |
+---
 
 ### Must Memorize vs Re-derive
 
-| Concept | Status |
-|---|---|
-| `carry = sum / 10`, `digit = sum % 10` | ⭐ **Must Memorize** |
-| Dummy head trick for building lists | ⭐ **Must Memorize** |
-| Loop condition `while(l1 \|\| l2 \|\| carry)` | ⭐ **Must Memorize** |
-| The simulation logic itself | ✅ Re-derive each time |
+- **Must Memorize:**
+  1. Sentinel / Dummy Head idiom (`ListNode* dummy = new ListNode(0); ListNode* curr = dummy; return dummy->next;`)
+  2. The compound loop guard: `while (l1 || l2 || carry)` (prevents forgetting the trailing carry!)
+- **Re-derive Each Time:**
+  - Base math logic (`sum / 10`, `sum % 10`).
+
+---
+
+### C++ Concepts Learned Here
+
+1. **Custom Structs & Constructors:**
+   ```cpp
+   struct ListNode {
+       int val;
+       ListNode *next;
+       ListNode(int x) : val(x), next(nullptr) {}
+   };
+   ```
+2. **Safe Pointer Access with Ternary Operator:**
+   `int val = (l1 != nullptr) ? l1->val : 0;` prevents dereferencing null pointers.
+3. **Dynamic Memory & Deletion (`delete`):**
+   When `dummy` is allocated with `new ListNode(0)`, we delete it before returning `dummy->next` to prevent memory leaks in production C++.
 
 ---
 
 ### Similar Problems to Attempt Next
 
-| # | Problem | LeetCode | Connection |
-|---|---|---|---|
-| 1 | Multiply Strings | [LC 43](https://leetcode.com/problems/multiply-strings/) | Digit-by-digit simulation |
-| 2 | Add Binary | [LC 67](https://leetcode.com/problems/add-binary/) | Same carry logic, on strings |
-| 3 | Merge Two Sorted Lists | [LC 21](https://leetcode.com/problems/merge-two-sorted-lists/) | Same dual-pointer + dummy head technique |
-| 4 | Reverse Linked List | [LC 206](https://leetcode.com/problems/reverse-linked-list/) | Core linked list manipulation |
-| 5 | Add Two Numbers II | [LC 445](https://leetcode.com/problems/add-two-numbers-ii/) | Same problem but digits in forward order — uses a Stack! |
+| Problem | Key Difference | Difficulty |
+|---|---|:---:|
+| [Add Two Numbers II (LC 445)](https://leetcode.com/problems/add-two-numbers-ii/) | Digits are in **most significant first** order ➔ Use Stacks or Reverse Lists | 🟡 Medium |
+| [Add Strings (LC 415)](https://leetcode.com/problems/add-strings/) | Same column addition math on strings instead of linked lists | 🟢 Easy |
+| [Add Binary (LC 67)](https://leetcode.com/problems/add-binary/) | Base 2 instead of Base 10 (`sum % 2`, `carry = sum / 2`) | 🟢 Easy |
+| [Plus One (LC 66)](https://leetcode.com/problems/plus-one/) | Adding 1 to an array of digits | 🟢 Easy |
+| [Merge Two Sorted Lists (LC 21)](https://leetcode.com/problems/merge-two-sorted-lists/) | Uses the exact same Dummy Head pattern to merge two lists | 🟢 Easy |
 
 ---
 
-### Recursion Approach (Bonus — mentioned in problem tags)
-
-The iterative approach is preferred in interviews, but recursion is elegant:
-
-```
-addTwoNumbers(l1, l2, carry):
-    if l1 == null AND l2 == null AND carry == 0:
-        return null
-    
-    sum = (l1 ? l1->val : 0) + (l2 ? l2->val : 0) + carry
-    
-    node = new ListNode(sum % 10)
-    node->next = addTwoNumbers(next of l1, next of l2, sum / 10)
-    
-    return node
-```
-
-Each recursive call handles one digit position. The recursion stack grows to O(max(M,N)) depth.
-
----
-
-*Last Updated: 2026-09-25 | Phase: 2 | Language: C++*
+*Phase 2 | Problem 01 | LeetCode #2 | Add Two Numbers*

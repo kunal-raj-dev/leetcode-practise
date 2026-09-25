@@ -1,209 +1,232 @@
 // ============================================================
-// Problem : Add Two Numbers (LeetCode #2)
-// Link    : https://leetcode.com/problems/add-two-numbers
-// Approach: OPTIMIZED — Digit-by-digit simulation WITH dummy head
-// Time    : O(max(M, N))
-// Space   : O(max(M, N))
+// Problem  : LeetCode #2 — Add Two Numbers
+// Approach : Optimal — One-Pass Traversal with Sentinel (Dummy Head)
+// Time     : O(max(N, M)) — single simultaneous pass over the lists
+// Space    : O(1) auxiliary — no intermediate data structures used
+//            (O(max(N, M)) space strictly for the output list)
+// ============================================================
+// THE CORE INSIGHT:
+//   1. The digits are stored in REVERSE order. That means the head
+//      of each list holds the 1's place (least significant digit).
+//      This is a gift! In elementary school column addition, you ALWAYS
+//      start adding from the 1's place and move right-to-left.
+//      Here, we simply traverse left-to-right (head to tail).
+//
+//   2. We do NOT need to extract digits into intermediate arrays.
+//      We can compute (val1 + val2 + carry) on-the-fly, produce a new
+//      node with (sum % 10), update carry = (sum / 10), and advance!
+//
+//   3. THE SENTINEL (DUMMY HEAD) IDIOM:
+//      Allocating a dummy head node eliminates having to write special
+//      'if (head == nullptr)' logic for the first node. Every single node
+//      (including the very first) is appended via 'curr->next = new Node(...)'.
 // ============================================================
 
 #include <bits/stdc++.h>
 using namespace std;
 
-// Definition for singly-linked list.
-// Provided by LeetCode — don't redefine in actual submission.
+// Definition for singly-linked list node provided by LeetCode
 struct ListNode {
     int val;
-    ListNode* next;
+    ListNode *next;
+    ListNode() : val(0), next(nullptr) {}
     ListNode(int x) : val(x), next(nullptr) {}
+    ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
 class Solution {
 public:
     ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        // dummy: acts as an anchor before the real head of the result list
+        ListNode* dummy = new ListNode(0);
+        ListNode* curr = dummy; // pointer to the last node in our result list
 
-        // ── DUMMY HEAD TRICK ─────────────────────────────────────────
-        // We create a fake "sentinel" node at the start of our result list.
-        // Its value doesn't matter (we use 0). It's just a placeholder.
-        //
-        // WHY?
-        // Without it, we need to special-case the very first result node:
-        //    if (head == nullptr) { head = newNode; tail = newNode; }
-        //    else { tail->next = newNode; tail = tail->next; }
-        //
-        // With a dummy head, EVERY new node is added the same way:
-        //    tail->next = new ListNode(digit);
-        //    tail = tail->next;
-        //
-        // At the end, the real result starts at dummy.next (skipping the placeholder).
-        // ─────────────────────────────────────────────────────────────
-        ListNode dummy(0);         // placeholder (sentinel) node — value unused
-        ListNode* tail = &dummy;   // tail always points to the last node we added
+        int carry = 0; // stores carry from the previous column addition (0 or 1)
 
-        int carry = 0; // carry from previous digit addition (0 or 1)
-
-        // ── MAIN LOOP ────────────────────────────────────────────────
-        // Continue as long as there are digits left in EITHER list,
-        // OR there's a carry remaining.
-        //
-        // KEY: We use || (OR) not && (AND)
-        //   If we used &&, we'd stop when the shorter list ends.
-        //   But the longer list might still have digits we haven't processed!
-        // ─────────────────────────────────────────────────────────────
+        // LOOP INVARIANT:
+        // Continue as long as:
+        //   - l1 still has nodes to process, OR
+        //   - l2 still has nodes to process, OR
+        //   - there is a non-zero carry remaining (e.g., 99 + 1 = 100)
         while (l1 != nullptr || l2 != nullptr || carry != 0) {
 
-            // Get the current digit from l1.
-            // If l1 is exhausted (nullptr), treat it as digit 0.
-            // This handles the case where l1 is shorter than l2.
-            int d1 = (l1 != nullptr) ? l1->val : 0;
+            // If a list has ended (nullptr), its contribution to the sum is 0
+            int val1 = (l1 != nullptr) ? l1->val : 0;
+            int val2 = (l2 != nullptr) ? l2->val : 0;
 
-            // Get the current digit from l2.
-            // Same idea — treat exhausted list as contributing 0.
-            int d2 = (l2 != nullptr) ? l2->val : 0;
+            // Total sum at current decimal column
+            int sum = val1 + val2 + carry;
 
-            // Sum = both digits + carry from the previous position
-            // Maximum possible: 9 + 9 + 1(carry) = 19 → carry will be at most 1
-            int sum = d1 + d2 + carry;
-
-            // Compute the new carry (0 if sum < 10, 1 if sum >= 10)
-            // Integer division: 7/10 = 0, 10/10 = 1, 17/10 = 1, 19/10 = 1
+            // Calculate new carry for the next column (e.g., 15 / 10 = 1)
             carry = sum / 10;
 
-            // Compute the actual digit to store at this position
-            // Modulo: 7%10 = 7, 10%10 = 0, 17%10 = 7, 19%10 = 9
-            int digit = sum % 10;
+            // Create new node with the current column's single digit (e.g., 15 % 10 = 5)
+            curr->next = new ListNode(sum % 10);
+            curr = curr->next; // advance the tail pointer
 
-            // Create a new node with this digit and attach it to the result list.
-            // Because we have a dummy head, this works uniformly for ALL nodes —
-            // no special case for the first node.
-            tail->next = new ListNode(digit);
-            tail = tail->next; // advance tail to the newly added node
-
-            // Advance l1 and l2 to their next nodes (only if not already null)
+            // Advance input list pointers if they are not already at the end
             if (l1 != nullptr) l1 = l1->next;
             if (l2 != nullptr) l2 = l2->next;
         }
 
-        // dummy.next is the actual first node of the result list
-        // (dummy itself is just the placeholder we never included in results)
-        return dummy.next;
+        // The real result starts right after the dummy node
+        ListNode* result = dummy->next;
+
+        // Delete the temporary sentinel node to prevent memory leaks
+        delete dummy;
+
+        return result;
     }
 };
 
 // ============================================================
-// BONUS — RECURSIVE APPROACH
-// Elegant, but watch the call stack for very long lists (100 nodes deep).
+// HELPER FUNCTIONS FOR LOCAL TESTING
 // ============================================================
 
-class SolutionRecursive {
-public:
-    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
-        return solve(l1, l2, 0);
-    }
-
-private:
-    ListNode* solve(ListNode* l1, ListNode* l2, int carry) {
-        // Base case: both lists done and no carry left — nothing to return
-        if (!l1 && !l2 && carry == 0) return nullptr;
-
-        int d1 = l1 ? l1->val : 0;
-        int d2 = l2 ? l2->val : 0;
-        int sum = d1 + d2 + carry;
-
-        // Create node for this digit position
-        ListNode* node = new ListNode(sum % 10);
-
-        // Recursively compute the rest (next digit positions)
-        // Pass the new carry forward
-        node->next = solve(
-            l1 ? l1->next : nullptr,
-            l2 ? l2->next : nullptr,
-            sum / 10
-        );
-
-        return node;
-    }
-};
-
-// ============================================================
-// TEST HELPERS
-// ============================================================
-
-ListNode* buildList(vector<int> digits) {
-    if (digits.empty()) return nullptr;
-    ListNode* head = new ListNode(digits[0]);
-    ListNode* curr = head;
-    for (int i = 1; i < (int)digits.size(); i++) {
-        curr->next = new ListNode(digits[i]);
+// Creates a linked list from an array of integers
+ListNode* createList(const vector<int>& values) {
+    ListNode* dummy = new ListNode(0);
+    ListNode* curr = dummy;
+    for (int v : values) {
+        curr->next = new ListNode(v);
         curr = curr->next;
     }
+    ListNode* head = dummy->next;
+    delete dummy;
     return head;
 }
 
+// Prints the linked list in format: 7 -> 0 -> 8
 void printList(ListNode* head) {
-    while (head) {
-        cout << head->val;
-        if (head->next) cout << " → ";
-        head = head->next;
+    if (!head) {
+        cout << "[]" << endl;
+        return;
     }
-    cout << "\n";
+    ListNode* curr = head;
+    while (curr != nullptr) {
+        cout << curr->val;
+        if (curr->next != nullptr) cout << " -> ";
+        curr = curr->next;
+    }
+    cout << endl;
 }
 
+// Frees all allocated memory in the linked list
+void freeList(ListNode* head) {
+    while (head != nullptr) {
+        ListNode* temp = head;
+        head = head->next;
+        delete temp;
+    }
+}
+
+// ============================================================
+// MAIN FUNCTION — COMPREHENSIVE TEST SUITE
+// ============================================================
+
 int main() {
+    // Fast I/O lines
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    Solution sol;
+    Solution solver;
 
-    // Test 1: 342 + 465 = 807    → [7, 0, 8]
-    cout << "Test 1 (342 + 465 = 807):    ";
-    printList(sol.addTwoNumbers(buildList({2, 4, 3}), buildList({5, 6, 4})));
+    cout << "=== LeetCode #2: Add Two Numbers (Optimized One-Pass) ===" << "\n\n";
 
-    // Test 2: 99 + 1 = 100       → [0, 0, 1]   (carry at the end!)
-    cout << "Test 2 (99 + 1 = 100):       ";
-    printList(sol.addTwoNumbers(buildList({9, 9}), buildList({1})));
+    // --- Test Case 1: Standard Example (342 + 465 = 807) ---
+    // l1: 2 -> 4 -> 3
+    // l2: 5 -> 6 -> 4
+    ListNode* l1_1 = createList({2, 4, 3});
+    ListNode* l2_1 = createList({5, 6, 4});
+    cout << "Test 1 Input : l1 = [2, 4, 3], l2 = [5, 6, 4]" << "\n";
+    ListNode* ans1 = solver.addTwoNumbers(l1_1, l2_1);
+    cout << "Test 1 Output: ";
+    printList(ans1);
+    cout << "Expected     : 7 -> 0 -> 8" << "\n\n";
 
-    // Test 3: 0 + 0 = 0          → [0]
-    cout << "Test 3 (0 + 0 = 0):          ";
-    printList(sol.addTwoNumbers(buildList({0}), buildList({0})));
+    // --- Test Case 2: Both Zeros (0 + 0 = 0) ---
+    ListNode* l1_2 = createList({0});
+    ListNode* l2_2 = createList({0});
+    cout << "Test 2 Input : l1 = [0], l2 = [0]" << "\n";
+    ListNode* ans2 = solver.addTwoNumbers(l1_2, l2_2);
+    cout << "Test 2 Output: ";
+    printList(ans2);
+    cout << "Expected     : 0" << "\n\n";
 
-    // Test 4: 999 + 999 = 1998   → [8, 9, 9, 1]
-    cout << "Test 4 (999 + 999 = 1998):   ";
-    printList(sol.addTwoNumbers(buildList({9, 9, 9}), buildList({9, 9, 9})));
+    // --- Test Case 3: Unequal Lengths + Multi-digit Carry (9999999 + 9999 = 10009998) ---
+    ListNode* l1_3 = createList({9, 9, 9, 9, 9, 9, 9});
+    ListNode* l2_3 = createList({9, 9, 9, 9});
+    cout << "Test 3 Input : l1 = [9,9,9,9,9,9,9], l2 = [9,9,9,9]" << "\n";
+    ListNode* ans3 = solver.addTwoNumbers(l1_3, l2_3);
+    cout << "Test 3 Output: ";
+    printList(ans3);
+    cout << "Expected     : 8 -> 9 -> 9 -> 9 -> 0 -> 0 -> 0 -> 1" << "\n\n";
 
-    // Test 5: Different lengths 342 + 65 = 407  → [7, 0, 4]
-    cout << "Test 5 (342 + 65 = 407):     ";
-    printList(sol.addTwoNumbers(buildList({2, 4, 3}), buildList({5, 6})));
+    // --- Test Case 4: Lingering Final Carry (99 + 1 = 100) ---
+    ListNode* l1_4 = createList({9, 9});
+    ListNode* l2_4 = createList({1});
+    cout << "Test 4 Input : l1 = [9, 9], l2 = [1]" << "\n";
+    ListNode* ans4 = solver.addTwoNumbers(l1_4, l2_4);
+    cout << "Test 4 Output: ";
+    printList(ans4);
+    cout << "Expected     : 0 -> 0 -> 1" << "\n\n";
 
-    // Recursive version tests
-    cout << "\n--- Recursive Version ---\n";
-    SolutionRecursive solR;
-    cout << "Test 1 (342 + 465 = 807):    ";
-    printList(solR.addTwoNumbers(buildList({2, 4, 3}), buildList({5, 6, 4})));
-    cout << "Test 2 (99 + 1 = 100):       ";
-    printList(solR.addTwoNumbers(buildList({9, 9}), buildList({1})));
+    // --- Test Case 5: Single Digit Carry (5 + 5 = 10) ---
+    ListNode* l1_5 = createList({5});
+    ListNode* l2_5 = createList({5});
+    cout << "Test 5 Input : l1 = [5], l2 = [5]" << "\n";
+    ListNode* ans5 = solver.addTwoNumbers(l1_5, l2_5);
+    cout << "Test 5 Output: ";
+    printList(ans5);
+    cout << "Expected     : 0 -> 1" << "\n";
+
+    // Clean up memory
+    freeList(l1_1); freeList(l2_1); freeList(ans1);
+    freeList(l1_2); freeList(l2_2); freeList(ans2);
+    freeList(l1_3); freeList(l2_3); freeList(ans3);
+    freeList(l1_4); freeList(l2_4); freeList(ans4);
+    freeList(l1_5); freeList(l2_5); freeList(ans5);
 
     return 0;
 }
 
 // ============================================================
-// COMPLEXITY ANALYSIS — OPTIMIZED (Iterative)
+// STEP-BY-STEP TRACE (Mental Walkthrough of Test 1):
 //
-// Time:  O(max(M, N))
-//   M = length of l1, N = length of l2
-//   Each node is visited exactly once.
-//   The extra carry-node at the end (if any) is O(1).
+// l1 = [2, 4, 3],  l2 = [5, 6, 4]
 //
-// Space: O(max(M, N))
-//   We build a new result list.
-//   Its length is at most max(M, N) + 1 (for carry overflow).
-//   We don't count the output space in most analyses → O(1) extra space.
+// dummy = [0]
+// curr = dummy
+// carry = 0
 //
-// COMPLEXITY ANALYSIS — RECURSIVE
+// Iteration 1:
+//   l1 points to 2, l2 points to 5, carry = 0
+//   sum = 2 + 5 + 0 = 7
+//   carry = 7 / 10 = 0
+//   curr->next = new Node(7)
+//   curr moves to Node(7)
+//   l1 moves to 4, l2 moves to 6
 //
-// Time:  O(max(M, N))   — same, each position processed once
-// Space: O(max(M, N))   — recursion call stack depth equals result length
+// Iteration 2:
+//   l1 points to 4, l2 points to 6, carry = 0
+//   sum = 4 + 6 + 0 = 10
+//   carry = 10 / 10 = 1
+//   curr->next = new Node(0)
+//   curr moves to Node(0)
+//   l1 moves to 3, l2 moves to 4
 //
-// The iterative approach is preferred in interviews because:
-//   1. No risk of stack overflow for very deep lists
-//   2. Easier to reason about for interviewers
+// Iteration 3:
+//   l1 points to 3, l2 points to 4, carry = 1
+//   sum = 3 + 4 + 1 = 8
+//   carry = 8 / 10 = 0
+//   curr->next = new Node(8)
+//   curr moves to Node(8)
+//   l1 moves to nullptr, l2 moves to nullptr
+//
+// Iteration 4:
+//   l1 == nullptr && l2 == nullptr && carry == 0
+//   Loop terminates!
+//
+// result = dummy->next = Node(7)
+// Output: 7 -> 0 -> 8  ✅
 // ============================================================

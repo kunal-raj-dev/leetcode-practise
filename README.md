@@ -34,6 +34,8 @@ Every problem adheres to a structured 5-layer methodology:
 | # | Problem | Topic | Difficulty | Google Tagged | Solutions & Notes |
 |:---:|---|---|:---:|:---:|:---:|
 | 01 | [Two Sum (LC 1)](https://leetcode.com/problems/two-sum/) | Array / Hash Table | Easy | ⭐ Yes | [Notes & Code](./Phase_1_Foundation/01_two_sum_1/) |
+| 02 | [Container With Most Water (LC 11)](https://leetcode.com/problems/container-with-most-water/) | Array, Two Pointers, Greedy | Medium | No | [Notes & Code](./Phase_1_Foundation/02_container_with_most_water_11/) |
+| 03 | [Longest Palindromic Substring (LC 5)](https://leetcode.com/problems/longest-palindromic-substring/) | String, Two Pointers, DP | Medium | ⭐ Yes | [Notes & Code](./Phase_1_Foundation/03_longest_palindromic_substring_5/) |
 
 ### Phase 2: Core Data Structures
 | # | Problem | Topic | Difficulty | Google Tagged | Solutions & Notes |

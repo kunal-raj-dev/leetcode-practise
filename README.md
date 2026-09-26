@@ -41,6 +41,8 @@ Every problem adheres to a structured 5-layer methodology:
 | # | Problem | Topic | Difficulty | Google Tagged | Solutions & Notes |
 |:---:|---|---|:---:|:---:|:---:|
 | 01 | [Add Two Numbers (LC 2)](https://leetcode.com/problems/add-two-numbers/) | Linked List, Math | Medium | ⭐ Yes | [Notes & Code](./Phase_2_Core_DS/01_add_two_numbers_2/) |
+| 02 | [Longest Substring Without Repeating Characters (LC 3)](https://leetcode.com/problems/longest-substring-without-repeating-characters/) | Hash Table, String, Sliding Window | Medium | ⭐ Yes | [Notes & Code](./Phase_2_Core_DS/02_longest_substring_without_repeating_characters_3/) |
+
 
 
 ---

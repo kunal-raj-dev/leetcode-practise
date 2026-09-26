@@ -5,7 +5,8 @@
 // Space    : O(1) auxiliary space (excluding returned string)
 // ============================================================
 
-#include <bits/stdc++.h>
+#include <string>
+#include <iostream>
 #include <cassert>
 using namespace std;
 
@@ -25,21 +26,22 @@ bool isPalindrome(const string& s, int left, int right) {
 // Brute Force: Enumerate every possible start index i and end index j.
 // For every substring s[i..j], verify if it is a palindrome.
 // Keep track of the longest one discovered.
-string longestPalindrome(string s) {
+string longestPalindrome(const string& s) {
     int n = static_cast<int>(s.length());
-    if (n <= 1) return s;
+    if (n == 0) return "";
+    if (n == 1) return s;
 
-    int maxLen = 0;
+    int maxLen = 1;
     int startIdx = 0;
 
     // Outer loop: starting position of substring
     for (int i = 0; i < n; i++) {
-        // Inner loop: ending position of substring
-        for (int j = i; j < n; j++) {
-            int currentLen = j - i + 1;
-            // Prune: only check palindrome if this substring is longer than our best so far
-            if (currentLen > maxLen && isPalindrome(s, i, j)) {
-                maxLen = currentLen;
+        // Inner loop: start j at i + maxLen so we only check substrings
+        // strictly longer than our current best (structural pruning).
+        // No need for a runtime currentLen > maxLen guard — it's guaranteed.
+        for (int j = i + maxLen; j < n; j++) {
+            if (isPalindrome(s, i, j)) {
+                maxLen = j - i + 1;
                 startIdx = i;
             }
         }
@@ -67,7 +69,7 @@ int main() {
     string s3 = "a";
     assert(longestPalindrome(s3) == "a");
 
-    // Test Case 4: Two different characters
+    // Test Case 4: Two different characters — either is a valid single-char answer
     string s4 = "ac";
     string res4 = longestPalindrome(s4);
     assert(res4 == "a" || res4 == "c");
@@ -79,6 +81,14 @@ int main() {
     // Test Case 6: All identical characters
     string s6 = "aaaa";
     assert(longestPalindrome(s6) == "aaaa");
+
+    // Test Case 7: Empty string
+    string s7 = "";
+    assert(longestPalindrome(s7) == "");
+
+    // Test Case 8: No palindrome longer than 1 character
+    string s8 = "abcde";
+    assert(longestPalindrome(s8).length() == 1);
 
     cout << "All brute-force tests passed successfully!\n";
     cout << "Sample result for \"babad\": " << res1 << '\n';

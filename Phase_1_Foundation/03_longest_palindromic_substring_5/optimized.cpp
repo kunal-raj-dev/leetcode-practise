@@ -11,13 +11,18 @@
 // Expanding outward from each center takes O(1) extra space!
 // ============================================================
 
-#include <bits/stdc++.h>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <algorithm>
 #include <cassert>
 using namespace std;
 
 // Helper: Expands outward from [left, right] as long as characters match.
-// Returns the length of the valid palindromic substring discovered.
-int expandAroundCenter(const string& s, int left, int right) {
+// Returns the {start, end} index pair of the valid palindromic substring found.
+// Returning a pair avoids the subtle length-to-start-index arithmetic in the caller,
+// making the logic self-documenting and less error-prone.
+pair<int, int> expandAroundCenter(const string& s, int left, int right) {
     int n = static_cast<int>(s.length());
     while (left >= 0 && right < n && s[left] == s[right]) {
         left--;
@@ -25,36 +30,35 @@ int expandAroundCenter(const string& s, int left, int right) {
     }
     // Loop breaks when s[left] != s[right] or indices went out of bounds.
     // The valid palindrome was bounded by (left + 1) and (right - 1).
-    // Length = (right - 1) - (left + 1) + 1 = right - left - 1
-    return right - left - 1;
+    return {left + 1, right - 1};
 }
 
 // -------------------------------------------------------------------------
 // PRIMARY INTERVIEW SOLUTION: Expand Around Center (O(N^2) Time, O(1) Space)
 // -------------------------------------------------------------------------
-string longestPalindrome(string s) {
+string longestPalindrome(const string& s) {
     int n = static_cast<int>(s.length());
-    if (n <= 1) return s;
+    if (n == 0) return "";
+    if (n == 1) return s;
 
     int start = 0;
     int maxLen = 1;
 
     for (int i = 0; i < n; i++) {
         // Case 1: Odd-length palindrome centered at s[i] (e.g. "aba", center 'b')
-        int len1 = expandAroundCenter(s, i, i);
+        auto [l1, r1] = expandAroundCenter(s, i, i);
 
-        // Case 2: Even-length palindrome centered between s[i] and s[i + 1] (e.g. "abba", center 'bb')
-        int len2 = expandAroundCenter(s, i, i + 1);
+        // Case 2: Even-length palindrome centered between s[i] and s[i+1] (e.g. "abba")
+        auto [l2, r2] = expandAroundCenter(s, i, i + 1);
 
-        int bestCurrent = max(len1, len2);
-
-        if (bestCurrent > maxLen) {
-            maxLen = bestCurrent;
-            // Mathematical Derivation for Start Index:
-            // Odd length L centered at i       : radius = (L - 1) / 2  --> start = i - (L - 1) / 2
-            // Even length L centered at (i, i+1): left center is i      --> start = i - (L - 1) / 2
-            // Because integer division truncates, (bestCurrent - 1) / 2 works for BOTH cases!
-            start = i - (bestCurrent - 1) / 2;
+        // Pick whichever expansion gave us the longer palindrome
+        if (r1 - l1 + 1 > maxLen) {
+            maxLen = r1 - l1 + 1;
+            start = l1;
+        }
+        if (r2 - l2 + 1 > maxLen) {
+            maxLen = r2 - l2 + 1;
+            start = l2;
         }
     }
 
@@ -125,26 +129,34 @@ int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    // Test cases
-    vector<string> testCases = {
-        "babad",
-        "cbbd",
-        "a",
-        "ac",
-        "racecar",
-        "aaaa",
-        "forgeeksskeegfor",
-        "abacdfgdcaba"
+    // Test cases: {input, expected_length}
+    // Both algorithms must agree on palindrome length (answer may differ for ties)
+    vector<pair<string, int>> testCases = {
+        {"babad",           3},
+        {"cbbd",            2},
+        {"a",               1},
+        {"ac",              1},
+        {"racecar",         7},
+        {"aaaa",            4},
+        {"forgeeksskeegfor",10},  // "geeksskeeg" is the longest palindrome
+        {"abacdfgdcaba",    3},
+        {"",                0},  // Empty string edge case
+        {"abcde",           1},  // No palindrome longer than 1
+        {"aaaaaa",          6},  // All identical
     };
 
-    for (const string& s : testCases) {
-        string resOptimal = longestPalindrome(s);
+    for (const auto& [s, expectedLen] : testCases) {
+        string resOptimal  = longestPalindrome(s);
         string resManacher = longestPalindromeManacher(s);
 
-        // Verify both produce palindromes of the exact same maximum length
+        // Both must return a palindrome of the expected maximum length
+        assert((int)resOptimal.length()  == expectedLen);
+        assert((int)resManacher.length() == expectedLen);
+
+        // Both must agree on palindrome length (may differ in which one for ties)
         assert(resOptimal.length() == resManacher.length());
 
-        cout << "Input: \"" << s << "\" -> Output: \"" << resOptimal 
+        cout << "Input: \"" << s << "\" -> Output: \"" << resOptimal
              << "\" (Length: " << resOptimal.length() << ")\n";
     }
 

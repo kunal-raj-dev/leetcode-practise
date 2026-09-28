@@ -30,3 +30,9 @@ ehthumbs.db
 *.tmp
 a.exe
 a.out
+
+# VS Code Code Runner output
+output/
+
+# Excalidraw
+excalidraw.log

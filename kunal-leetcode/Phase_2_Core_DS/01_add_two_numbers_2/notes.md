@@ -204,7 +204,7 @@ The dummy node eliminates all special cases for the first node!
 ## 🔴 LAYER 4 — C++ Implementation
 
 ### Approach 1: Brute Force (Vector Extraction & Addition)
-*(See [brute_force.cpp](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_2_Core_DS/01_add_two_numbers_2/brute_force.cpp))*
+*(See [brute_force.cpp](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/kunal-leetcode/Phase_2_Core_DS/01_add_two_numbers_2/brute_force.cpp))*
 
 Extract node values into arrays, simulate column addition, then allocate nodes:
 ```cpp
@@ -237,7 +237,7 @@ return dummy.next;
 ---
 
 ### Approach 2: Optimal (One-Pass Direct Simulation with Dummy Head)
-*(See [optimized.cpp](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_2_Core_DS/01_add_two_numbers_2/optimized.cpp))*
+*(See [optimized.cpp](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/kunal-leetcode/Phase_2_Core_DS/01_add_two_numbers_2/optimized.cpp))*
 
 ```cpp
 ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
@@ -379,3 +379,4 @@ return head;
 ---
 
 *Phase 2 | Problem 01 | LeetCode #2 | Add Two Numbers*
+

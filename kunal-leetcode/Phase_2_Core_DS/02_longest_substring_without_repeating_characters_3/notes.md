@@ -377,8 +377,8 @@ Initial State: left = 0, maxLen = 0, lastSeen = all -1
 ## 🔴 LAYER 4 — Implementation & Algorithmic Blueprint
 
 > Per workspace standards, full compilable and runnable C++ solutions are organized in dedicated files:
-> - Complete Brute Force Implementation: [`brute_force.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_2_Core_DS/02_longest_substring_without_repeating_characters_3/brute_force.cpp)
-> - Complete Optimal Sliding Window Implementation: [`optimized.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_2_Core_DS/02_longest_substring_without_repeating_characters_3/optimized.cpp)
+> - Complete Brute Force Implementation: [`brute_force.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/kunal-leetcode/Phase_2_Core_DS/02_longest_substring_without_repeating_characters_3/brute_force.cpp)
+> - Complete Optimal Sliding Window Implementation: [`optimized.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/kunal-leetcode/Phase_2_Core_DS/02_longest_substring_without_repeating_characters_3/optimized.cpp)
 
 ---
 
@@ -551,3 +551,4 @@ Is the problem asking for a CONTIGUOUS subsegment?
 | **Fruit Into Baskets** (LC 904) | 🟡 Medium | Exact clone of LC 159 disguised in a story problem | [LeetCode #904](https://leetcode.com/problems/fruit-into-baskets/) |
 | **Max Consecutive Ones III** (LC 1004) | 🟡 Medium | Sliding window flipping at most $K$ zeros | [LeetCode #1004](https://leetcode.com/problems/max-consecutive-ones-iii/) |
 | **Minimum Window Substring** (LC 76) | 🔴 Hard | Dynamic window looking for minimum size containing all target chars | [LeetCode #76](https://leetcode.com/problems/minimum-window-substring/) |
+

@@ -203,3 +203,4 @@ while (left < right) {
 | Two Sum II — Input Array Is Sorted (#167) | Opposite-end pointers and choosing a direction from the current result     | [LeetCode](https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/) |
 | 3Sum (#15)                                | Sorting, fixing one value, and applying two pointers                       | [LeetCode](https://leetcode.com/problems/3sum/)                             |
 | Trapping Rain Water (#42)                 | Boundary heights and water-level reasoning; a related but distinct problem | [LeetCode](https://leetcode.com/problems/trapping-rain-water/)              |
+

@@ -493,8 +493,8 @@ In 1975, Glenn Manacher made a historic discovery: **Longest Palindromic Substri
 ## 🔴 LAYER 4 — Implementation & Algorithmic Blueprint
 
 > **IMPORTANT ARCHITECTURAL RULE:** Full, compilable, and rigorously tested C++ source code is maintained strictly in dedicated files:
-> - 📄 **Brute Force Implementation:** [`brute_force.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_1_Foundation/03_longest_palindromic_substring_5/brute_force.cpp)
-> - 📄 **Optimal (Expand Around Center + Manacher) Implementation:** [`optimized.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_1_Foundation/03_longest_palindromic_substring_5/optimized.cpp)
+> - 📄 **Brute Force Implementation:** [`brute_force.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/parmarth-leetcode/Phase_1_Foundation/03_longest_palindromic_substring_5/brute_force.cpp)
+> - 📄 **Optimal (Expand Around Center + Manacher) Implementation:** [`optimized.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/parmarth-leetcode/Phase_1_Foundation/03_longest_palindromic_substring_5/optimized.cpp)
 
 ---
 
@@ -614,7 +614,7 @@ FUNCTION longestPalindromeBruteForce(s):
 | **Memory Footprint** | Negligible | $10^6$ booleans ($\approx 1$ MB) | Negligible | Vector of $2N$ integers |
 | **Cache Performance** | Good | Poor (2D Table jumps) | Excellent | Good |
 | **Interview Recommendation** | Mention as baseline | Good discussion point | ⭐ **Primary Must-Code** | 🌟 Google L4+ Follow-Up |
-| **Code Location** | [`brute_force.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_1_Foundation/03_longest_palindromic_substring_5/brute_force.cpp) | Conceptual in Notes | [`optimized.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_1_Foundation/03_longest_palindromic_substring_5/optimized.cpp) | [`optimized.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/Phase_1_Foundation/03_longest_palindromic_substring_5/optimized.cpp) |
+| **Code Location** | [`brute_force.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/parmarth-leetcode/Phase_1_Foundation/03_longest_palindromic_substring_5/brute_force.cpp) | Conceptual in Notes | [`optimized.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/parmarth-leetcode/Phase_1_Foundation/03_longest_palindromic_substring_5/optimized.cpp) | [`optimized.cpp`](file:///c:/Users/kunal/Desktop/DSA%20self%20practise/parmarth-leetcode/Phase_1_Foundation/03_longest_palindromic_substring_5/optimized.cpp) |
 
 ---
 
@@ -681,3 +681,4 @@ Need all / count?    N <= 10^5?                      (e.g., LeetCode #516)
 | **125** | **Valid Palindrome** | 🟢 Easy | Two pointers moving inward from both outer edges with alphanumeric filtering. | [LeetCode 125](https://leetcode.com/problems/valid-palindrome/) |
 | **214** | **Shortest Palindrome** | 🔴 Hard | Finding the longest palindromic prefix using KMP prefix table ($\pi$-table) or Rolling Hash. | [LeetCode 214](https://leetcode.com/problems/shortest-palindrome/) |
 | **131** | **Palindrome Partitioning** | 🟡 Medium | Backtracking / DFS combined with precomputed palindrome checks (either Two Pointers or DP table). | [LeetCode 131](https://leetcode.com/problems/palindrome-partitioning/) |
+

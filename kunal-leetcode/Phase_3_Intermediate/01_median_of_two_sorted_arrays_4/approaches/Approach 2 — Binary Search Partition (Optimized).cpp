@@ -29,19 +29,19 @@ public:
             int j = half - i;           // Corresponding partition index in nums2
 
             // Sentinel values for boundary partitions
-            int maxLeft1  = (i == 0) ? INT_MIN : nums1[i - 1];
-            int minRight1 = (i == m) ? INT_MAX : nums1[i];
-            int maxLeft2  = (j == 0) ? INT_MIN : nums2[j - 1];
-            int minRight2 = (j == n) ? INT_MAX : nums2[j];
+            int maxL1  = (i == 0) ? INT_MIN : nums1[i - 1];
+            int minR1 = (i == m) ? INT_MAX : nums1[i];
+            int maxL2  = (j == 0) ? INT_MIN : nums2[j - 1];
+            int minR2 = (j == n) ? INT_MAX : nums2[j];
 
-            if (maxLeft1 <= minRight2 && maxLeft2 <= minRight1) {
+            if (maxL1 <= minR2 && maxL2 <= minR1) {
                 // Found the correct partition
                 if ((m + n) % 2 == 1)
-                    return max(maxLeft1, maxLeft2);
+                    return max(maxL1, maxL2);
                 else
-                    return (max(maxLeft1, maxLeft2) + min(minRight1, minRight2)) / 2.0;
+                    return (max(maxL1, maxL2) + min(minR1, minR2)) / 2.0;
             }
-            else if (maxLeft1 > minRight2) {
+            else if (maxL1 > minR2) {
                 // Took too many from nums1 — move partition left
                 high = i - 1;
             }

@@ -11,7 +11,9 @@ class Solution {
 public:
     double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
         // YOUR CODE HERE
-        return 0.0;
+        // Trying Approach 1
+
+        
     }
 };
 
